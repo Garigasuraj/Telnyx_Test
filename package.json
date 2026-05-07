@@ -1,0 +1,25 @@
+{
+  "name": "telnyx-media-streaming-app",
+  "version": "1.0.0",
+  "description": "Telnyx application for media streaming over WebSockets with call management",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "webhook-server": "node src/webhookServer.js",
+    "test": "node --test src/tests/*.test.js",
+    "test:call": "node src/tests/callTest.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "ws": "^8.14.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
