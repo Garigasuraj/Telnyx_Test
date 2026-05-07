@@ -14,7 +14,7 @@ export class MediaStreamHandler {
   /**
    * Connect to Telnyx media stream and handle incoming events
    * @param {string} streamUrl - WebSocket URL from Telnyx
-   * @param {Object} options - Configuration options
+   * @param {Object} options - Configuration option
    * @returns {Promise<WebSocket>}
    */
   connectToStream(streamUrl, options = {}) {
