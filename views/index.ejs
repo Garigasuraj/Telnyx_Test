@@ -1,0 +1,45 @@
+<div class="page-header">
+    <h1>🎯 Dashboard</h1>
+    <p>Telnyx Media Streaming Application</p>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card">
+        <h2>📱 Make a Call</h2>
+        <p>Initiate a new outbound call with media streaming enabled</p>
+        <a href="/calls/new" class="btn btn-primary">Start New Call</a>
+    </div>
+
+    <div class="card">
+        <h2>📞 Active Calls</h2>
+        <p>View and manage your active calls in real-time</p>
+        <a href="/calls" class="btn btn-primary">View Calls</a>
+    </div>
+
+    <div class="card">
+        <h2>🎧 Your Number</h2>
+        <p><strong><%= telnyxPhoneNumber %></strong></p>
+        <p>This is your Telnyx phone number configured for receiving calls</p>
+    </div>
+
+    <div class="card">
+        <h2>📊 Features</h2>
+        <ul>
+            <li>✅ Real-time Media Streaming</li>
+            <li>✅ DTMF Digit Detection</li>
+            <li>✅ Call Recordings</li>
+            <li>✅ WebSocket Integration</li>
+        </ul>
+    </div>
+</div>
+
+<div class="info-section">
+    <h2>Getting Started</h2>
+    <ol>
+        <li>Configure your Telnyx API key in the .env file</li>
+        <li>Set up your connection ID and phone number</li>
+        <li>Click "Start New Call" to make your first call</li>
+        <li>Monitor media streaming in real-time</li>
+        <li>Receive DTMF and other call events via webhooks</li>
+    </ol>
+</div>
