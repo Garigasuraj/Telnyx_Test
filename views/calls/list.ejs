@@ -1,0 +1,99 @@
+<div class="page-header">
+    <h1>📞 Active Calls</h1>
+</div>
+
+<% if (calls.length === 0) { %>
+    <div class="empty-state">
+        <p>No active calls at the moment</p>
+        <a href="/calls/new" class="btn btn-primary">Make a Call</a>
+    </div>
+<% } else { %>
+    <div class="calls-table-container">
+        <table class="calls-table">
+            <thead>
+                <tr>
+                    <th>Call ID</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Status</th>
+                    <th>Started</th>
+                    <th>Duration</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% calls.forEach(call => { %>
+                    <tr>
+                        <td>
+                            <a href="/calls/<%= call.callId %>">
+                                <%= call.callId.substring(0, 8) %>...
+                            </a>
+                        </td>
+                        <td><%= call.fromNumber %></td>
+                        <td><%= call.toNumber %></td>
+                        <td>
+                            <span class="status status-<%= call.status %>">
+                                <%= call.status %>
+                            </span>
+                        </td>
+                        <td><%= new Date(call.startTime).toLocaleTimeString() %></td>
+                        <td>
+                            <% if (call.endTime) { %>
+                                <%= Math.round((new Date(call.endTime) - new Date(call.startTime)) / 1000) %>s
+                            <% } else { %>
+                                <span id="duration-<%= call.callId %>">0s</span>
+                            <% } %>
+                        </td>
+                        <td class="actions">
+                            <a href="/calls/<%= call.callId %>" class="btn btn-sm btn-info">Details</a>
+                            <% if (call.status === 'active' || call.status === 'answered') { %>
+                                <button class="btn btn-sm btn-danger" onclick="hangupCall('<%= call.callId %>')">Hangup</button>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="calls-actions">
+        <a href="/calls/new" class="btn btn-primary">New Call</a>
+    </div>
+
+    <script>
+    function hangupCall(callId) {
+        if (confirm('Are you sure you want to hang up this call?')) {
+            fetch(`/calls/${callId}/hangup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            }).then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Call hung up successfully');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+        }
+    }
+
+    // Update call durations every second
+    const callStartTimes = {
+        <% calls.forEach((call, index) => { %>
+            <% if (!call.endTime && (call.status === 'active' || call.status === 'answered')) { %>
+                '<%= call.callId %>': '<%= call.startTime %>'<%= index < calls.length - 1 ? ',' : '' %>
+            <% } %>
+        <% }); %>
+    };
+
+    setInterval(() => {
+        Object.entries(callStartTimes).forEach(([callId, startTime]) => {
+            const duration = Math.round((Date.now() - new Date(startTime).getTime()) / 1000);
+            const elem = document.getElementById('duration-' + callId);
+            if (elem) elem.textContent = duration + 's';
+        });
+    }, 1000);
+    </script>
+<% } %>

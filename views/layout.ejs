@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %> | <%= appName %></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">📞 <%= appName %></a>
+            <ul class="navbar-menu">
+                <li><a href="/">Dashboard</a></li>
+                <li><a href="/calls">Active Calls</a></li>
+                <li><a href="/calls/new">New Call</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <%- body %>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 Telnyx Media Streaming App | Built with Node.js & Express</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

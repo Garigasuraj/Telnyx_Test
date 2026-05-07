@@ -1,0 +1,94 @@
+<div class="page-header">
+    <h1>📱 Make a New Call</h1>
+</div>
+
+<div class="form-container">
+    <form id="callForm" class="call-form">
+        <div class="form-group">
+            <label for="toNumber">Destination Number</label>
+            <input 
+                type="tel" 
+                id="toNumber" 
+                name="toNumber" 
+                placeholder="+18005551234"
+                required
+            >
+            <small>Include country code (e.g., +1 for US)</small>
+        </div>
+
+        <div class="form-group">
+            <label for="streamUrl">WebSocket Stream URL (Optional)</label>
+            <input 
+                type="url" 
+                id="streamUrl" 
+                name="streamUrl" 
+                placeholder="wss://example.com/media"
+            >
+            <small>Leave blank to disable media streaming</small>
+        </div>
+
+        <div class="form-group">
+            <label for="streamTrack">Stream Track</label>
+            <select id="streamTrack" name="streamTrack">
+                <option value="both_tracks">Both (Inbound & Outbound)</option>
+                <option value="inbound_track">Inbound Only</option>
+                <option value="outbound_track">Outbound Only</option>
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success">Call Now</button>
+            <a href="/calls" class="btn btn-secondary">View Active Calls</a>
+        </div>
+    </form>
+
+    <div id="callResponse" style="display: none;" class="alert"></div>
+</div>
+
+<script>
+document.getElementById('callForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const toNumber = document.getElementById('toNumber').value;
+    const streamUrl = document.getElementById('streamUrl').value;
+
+    try {
+        const response = await fetch('/calls', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ toNumber, streamUrl })
+        });
+
+        const data = await response.json();
+        const responseDiv = document.getElementById('callResponse');
+
+        if (data.success) {
+            responseDiv.className = 'alert alert-success';
+            responseDiv.innerHTML = `
+                <h3>✅ Call Initiated!</h3>
+                <p><strong>Call ID:</strong> ${data.callId}</p>
+                <p><strong>Control ID:</strong> ${data.controlId}</p>
+                <a href="/calls/${data.callId}" class="btn btn-primary">View Call Details</a>
+            `;
+        } else {
+            responseDiv.className = 'alert alert-danger';
+            responseDiv.innerHTML = `<p>❌ Error: ${data.error}</p>`;
+        }
+
+        responseDiv.style.display = 'block';
+        document.getElementById('callForm').reset();
+
+        setTimeout(() => {
+            window.location.href = '/calls/' + data.callId;
+        }, 2000);
+    } catch (error) {
+        console.error('Error:', error);
+        const responseDiv = document.getElementById('callResponse');
+        responseDiv.className = 'alert alert-danger';
+        responseDiv.innerHTML = `<p>❌ Error making call: ${error.message}</p>`;
+        responseDiv.style.display = 'block';
+    }
+});
+</script>

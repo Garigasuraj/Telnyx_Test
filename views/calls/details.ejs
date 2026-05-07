@@ -1,0 +1,124 @@
+<div class="page-header">
+    <h1>📞 Call Details</h1>
+    <a href="/calls" class="btn btn-secondary">Back to Calls</a>
+</div>
+
+<div class="call-details">
+    <div class="card">
+        <h2>Call Information</h2>
+        <table class="details-table">
+            <tr>
+                <td><strong>Call ID:</strong></td>
+                <td><%= call.callId %></td>
+            </tr>
+            <tr>
+                <td><strong>Control ID:</strong></td>
+                <td><code><%= call.controlId %></code></td>
+            </tr>
+            <tr>
+                <td><strong>From:</strong></td>
+                <td><%= call.fromNumber %></td>
+            </tr>
+            <tr>
+                <td><strong>To:</strong></td>
+                <td><%= call.toNumber %></td>
+            </tr>
+            <tr>
+                <td><strong>Status:</strong></td>
+                <td>
+                    <span class="status status-<%= call.status %>"><%= call.status %></span>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Started:</strong></td>
+                <td><%= new Date(call.startTime).toLocaleString() %></td>
+            </tr>
+            <% if (call.endTime) { %>
+                <tr>
+                    <td><strong>Ended:</strong></td>
+                    <td><%= new Date(call.endTime).toLocaleString() %></td>
+                </tr>
+                <tr>
+                    <td><strong>Duration:</strong></td>
+                    <td><%= Math.round((new Date(call.endTime) - new Date(call.startTime)) / 1000) %>s</td>
+                </tr>
+            <% } %>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Media Streaming</h2>
+        <table class="details-table">
+            <tr>
+                <td><strong>Stream URL:</strong></td>
+                <td><code><%= call.streamUrl || 'Not enabled' %></code></td>
+            </tr>
+            <tr>
+                <td><strong>Media Chunks Received:</strong></td>
+                <td><%= call.mediaData.chunks.length %></td>
+            </tr>
+            <tr>
+                <td><strong>DTMF Events:</strong></td>
+                <td><%= call.mediaData.dtmfEvents.length %></td>
+            </tr>
+            <tr>
+                <td><strong>Marks:</strong></td>
+                <td><%= call.mediaData.marks.length %></td>
+            </tr>
+        </table>
+    </div>
+
+    <% if (call.status === 'active' || call.status === 'answered') { %>
+        <div class="card">
+            <h2>Call Actions</h2>
+            <div class="action-buttons">
+                <button class="btn btn-danger" onclick="hangupCall()">Hangup Call</button>
+                <button class="btn btn-warning" onclick="showDTMFDialog()">Send DTMF</button>
+            </div>
+        </div>
+    <% } %>
+
+    <div class="card">
+        <h2>Metadata</h2>
+        <pre><%= JSON.stringify(call.metadata, null, 2) %></pre>
+    </div>
+</div>
+
+<script>
+function hangupCall() {
+    if (confirm('Are you sure you want to hang up this call?')) {
+        fetch('/calls/<%= call.callId %>/hangup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        }).then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Call hung up successfully');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(err => alert('Error: ' + err.message));
+    }
+}
+
+function showDTMFDialog() {
+    const digits = prompt('Enter DTMF digits to send (0-9, *, #):', '');
+    if (digits) {
+        fetch('/calls/<%= call.callId %>/dtmf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ digits })
+        }).then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('DTMF sent successfully');
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(err => alert('Error: ' + err.message));
+    }
+}
+</script>

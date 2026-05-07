@@ -1,193 +1,137 @@
 # Telnyx Media Streaming Application
 
-This application demonstrates how to use Telnyx's media streaming over WebSockets to make calls and receive real-time media with metadata.
+A comprehensive Node.js application demonstrating real-time media streaming capabilities with Telnyx's Call Control API over WebSockets. Built with Express.js and EJS for Server-Side Rendering with a modern, responsive UI.
 
-## Features
+## 🎯 Features
 
-- **Call Management**: Make outbound calls using Telnyx Call Control API
-- **Media Streaming**: Stream call audio in real-time over WebSockets (PCMU codec, 8kHz)
-- **Bidirectional Streaming**: Send and receive audio during active calls
-- **Webhook Server**: Handle Telnyx call events
-- **Metadata Collection**: Capture call information and stream metadata
-- **Mark Tracking**: Track media completion using mark messages
-- **DTMF Handling**: Capture DTMF (dial tone) events from inbound calls
+- **📞 Outbound Call Management** - Initiate and manage outbound calls with full control
+- **🎙️ Real-time Media Streaming** - WebSocket-based media streaming with PCMU, PCMA, G722, OPUS, AMR-WB, and L16 codecs
+- **☎️ DTMF Detection & Sending** - Send and receive DTMF digits during calls
+- **📊 Live Call Monitoring** - Real-time dashboard with active calls
+- **🔗 Webhook Integration** - Receive call events (answered, completed, hangup, streaming started/stopped)
+- **📱 Responsive Web UI** - Server-Side Rendered dashboard with EJS templates
+- **🔐 Secure Configuration** - Environment variables for sensitive API keys
 
-## Setup
+## 🛠️ Technology Stack
 
-### Prerequisites
+- Node.js v18+ with Express.js
+- EJS (Server-Side Rendering)
+- WebSockets (ws library)
+- Telnyx Call Control API v2
+- CSS3 with responsive design
 
-- Node.js 18+
-- A Telnyx account with an API key
-- A purchased Telnyx phone number
-- A WebSocket server endpoint (can be ngrok/tunneling service for local development)
+## 📋 Prerequisites
 
-### Environment Variables
+- Node.js v18 or higher
+- npm or yarn
+- Telnyx account with:
+  - Purchased phone number
+  - Connection ID
+  - API key
 
-Create a `.env` file in the root directory:
+## 🚀 Quick Start
 
-```env
-# Telnyx API Configuration
-TELNYX_API_KEY=your_api_key_here
-TELNYX_PHONE_NUMBER=+your_telnyx_number
-TELNYX_CONNECTION_ID=your_connection_id
-
-# Server Configuration
-WEBHOOK_URL=https://yourdomain.com/webhooks
-WEBSOCKET_SERVER_URL=wss://yourdomain.com/media
-LOCAL_PORT=3000
-WEBHOOK_PORT=3001
-```
-
-### Installation
+### 1. Installation
 
 ```bash
+git clone <repository-url>
+cd Telnyx_Test_APP
 npm install
 ```
 
-## Usage
-
-### Starting the Webhook Server
+### 2. Configuration
 
 ```bash
-npm run webhook-server
+cp .env.example .env
+# Edit .env with your Telnyx credentials
 ```
 
-This starts an Express server on port 3001 that receives Telnyx webhook events.
-
-### Making an Outbound Call
+### 3. Run
 
 ```bash
-npm run test:call
+npm run dev  # Development with auto-reload
+# or
+npm start    # Production mode
 ```
 
-Or programmatically:
+Visit `http://localhost:3000` in your browser!
 
-```javascript
-import { makeCall } from './src/callManager.js';
+## 📱 Web Interface
 
-const result = await makeCall({
-  to: '+18005551234',
-  from: '+your_telnyx_number',
-  connectionId: 'your_connection_id',
-  streamUrl: 'wss://yourdomain.com/media',
-  streamTrack: 'both_tracks',
-  bidirectionalMode: 'rtp',
-  codec: 'PCMU'
-});
-```
+- **Dashboard** (`/`) - Overview and quick links
+- **Active Calls** (`/calls`) - Monitor all active calls in real-time
+- **New Call** (`/calls/new`) - Initiate outbound calls
+- **Call Details** (`/calls/:callId`) - View detailed call information
 
-### Starting Media Streaming Server
+## 🔌 Key Features
 
+### Make Calls
+- Initiate outbound calls with Telnyx Connection
+- Optional WebSocket streaming URLs
+- Configure stream tracks (inbound, outbound, or both)
+
+### Real-time Monitoring
+- Live call dashboard
+- Call duration tracking
+- Media streaming statistics
+- DTMF event logging
+
+### Media Streaming
+- Bidirectional RTP streaming
+- Multiple codec support
+- Real-time audio processing
+
+## 🌐 Deployment
+
+### Heroku
 ```bash
-npm start
+heroku create your-app-name
+heroku config:set TELNYX_API_KEY=your_key
+git push heroku main
 ```
 
-This starts the WebSocket server that receives media streams from Telnyx.
-
-## API Endpoints
-
-### Webhook Endpoints
-
-- `POST /webhooks/call/initiated` - Handles call.initiated events
-- `POST /webhooks/call/answered` - Handles call.answered events
-- `POST /webhooks/call/machine_detection_ended` - Handles machine detection
-- `POST /webhooks/call/ended` - Handles call.ended events
-- `POST /webhooks/streaming/started` - Handles streaming.started events
-- `POST /webhooks/streaming/stopped` - Handles streaming.stopped events
-
-### WebSocket Events
-
-#### Received from Telnyx
-
-- `start` - Stream has started with media format info
-- `media` - Audio media chunk (base64 encoded RTP payload)
-- `dtmf` - DTMF digit received
-- `mark` - Mark message for tracking media completion
-- `stop` - Stream has stopped
-- `error` - Error occurred on the stream
-
-#### Send to Telnyx
-
-- `media` - Send RTP audio stream (base64 encoded)
-- `mark` - Send mark to track media completion
-- `clear` - Clear media queue
-
-## Event Flow
-
-1. **Call Initiated**: Call is placed using Call Control API with stream_url and stream_track
-2. **Call Connected**: Webhook receives `call.initiated` event
-3. **WebSocket Connection**: Telnyx connects to WebSocket server with stream metadata
-4. **Stream Started**: `start` event received with media format (PCMU, 8kHz, mono)
-5. **Media Exchange**: Audio chunks received as `media` events (base64 encoded)
-6. **DTMF Events**: Any dial tones captured as `dtmf` events
-7. **Mark Tracking**: Send marks to track when media finishes playing
-8. **Stream Stopped**: `stop` event when call ends
-9. **Webhook Notification**: `streaming.stopped` webhook confirms stream end
-
-## Media Format
-
-- **Codec**: PCMU (u-law) - 8kHz by default
-- **Sample Rate**: 8000 Hz
-- **Channels**: 1 (mono)
-- **Payload**: Base64-encoded RTP payload (without RTP headers)
-- **Chunk Duration**: 20ms - 30 seconds
-
-## Metadata Captured
-
-Each stream provides:
-- `stream_id`: Unique stream identifier
-- `call_control_id`: Call identifier for API operations
-- `call_session_id`: Session identifier
-- `from`: Caller's phone number
-- `to`: Called party's phone number
-- `tags`: Custom tags (if provided)
-- `user_id`: User identifier
-- `client_state`: Custom client state (base64 encoded)
-
-## Testing
-
-Run the test suite:
-
+### Docker
 ```bash
-npm test
+docker build -t telnyx-app .
+docker run -p 3000:3000 --env-file .env telnyx-app
 ```
 
-Run a specific call test:
+## 📚 API Endpoints
 
-```bash
-npm run test:call
-```
+- `GET /calls` - List active calls
+- `POST /calls` - Create new call
+- `GET /calls/:callId` - View call details
+- `POST /calls/:callId/hangup` - Hang up call
+- `POST /calls/:callId/dtmf` - Send DTMF digits
+- `POST /webhooks` - Receive Telnyx events
 
-## Examples
+## 🔐 Security Notes
 
-See the `src/examples/` directory for:
-- Simple media streaming example
-- DeepGram transcription integration
-- OpenAI speech-to-speech integration
+- Never commit `.env` files with real credentials
+- Use HTTPS/WSS in production
+- Implement rate limiting on endpoints
+- Validate all webhook signatures
 
-## Troubleshooting
+## 📝 Environment Variables
 
-### WebSocket Connection Refused
-- Ensure your `WEBSOCKET_SERVER_URL` is publicly accessible
-- Check that your tunneling service (ngrok) is running
-- Verify firewall allows WebSocket connections (port 443 for WSS)
+See `.env.example` for all available configuration options.
 
-### No Audio Received
-- Confirm `stream_track` is set correctly (`inbound_track`, `outbound_track`, or `both_tracks`)
-- Check that Telnyx can connect to your WebSocket server
-- Verify the `connection_id` and `TELNYX_API_KEY` are valid
+## 🐛 Troubleshooting
 
-### Bidirectional Streaming Issues
-- Ensure codec matches between request and RTP payload
-- Limit to one bidirectional stream per call
-- Audio chunks should be 20ms - 30 seconds
+- **Connection Error**: Verify API key and Connection ID
+- **Call Not Initiating**: Check destination number format and account credit
+- **WebSocket Issues**: Ensure firewall allows WebSocket connections
 
-## References
+## 📚 Resources
 
-- [Telnyx Media Streaming Documentation](https://developers.telnyx.com/docs/api/media-streaming)
-- [Telnyx Call Control API](https://developers.telnyx.com/docs/api/call-control)
-- [WebSocket Protocol](https://tools.ietf.org/html/rfc6455)
+- [Telnyx Documentation](https://developers.telnyx.com)
+- [Media Streaming Guide](https://developers.telnyx.com/docs/v2/voice/media-streaming)
+- [Call Control API](https://developers.telnyx.com/docs/api/v2/call-control)
 
-## License
+## 📄 License
 
-MIT
+MIT License
+
+---
+
+**Made with ❤️ for Telnyx Developers**
